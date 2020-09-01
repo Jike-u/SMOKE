@@ -145,6 +145,8 @@ _C.SOLVER.MASTER_BATCH = -1
 # Test
 # ---------------------------------------------------------------------------- #
 _C.TEST = CN()
+# test type
+_C.TEST.TEST_TYPE = ("detection",)
 # Number of images per batch
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch

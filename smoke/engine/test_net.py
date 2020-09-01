@@ -7,7 +7,7 @@ from smoke.utils.miscellaneous import mkdir
 
 
 def run_test(cfg, model):
-    eval_types = ("detection",)
+    eval_types = cfg.TEST.TEST_TYPE
     output_folders = [None] * len(cfg.DATASETS.TEST)
     dataset_names = cfg.DATASETS.TEST
     if cfg.OUTPUT_DIR:
