@@ -15,4 +15,4 @@ SOLVER:
   IMS_PER_BATCH: 32
   CHECKPOINT_PERIOD: 500
 TEST:
-  TEST_TYPE: ("detection_camera",)
+  TEST_TYPES: ("detection_camera",)
