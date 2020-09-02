@@ -222,7 +222,7 @@ class SMOKECoder():
         rotys = alphas + rays
 
         # in training time, it does not matter if angle lies in [-PI, PI]
-        # it matters at inference time? todo: does it really matter if it exceeds.
+        # it matters at inference time? TODO: does it really matter if it exceeds.
         larger_idx = (rotys > PI).nonzero()
         small_idx = (rotys < -PI).nonzero()
 

@@ -33,7 +33,7 @@ def group_norm(out_channels):
 
 
 def _fill_up_weights(up):
-    # todo: we can replace math here?
+    # TODO: we can replace math here?
     w = up.weight.data
     f = math.ceil(w.size(2) / 2)
     c = (2 * f - 1 - f % 2) / (2. * f)

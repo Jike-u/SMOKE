@@ -39,7 +39,7 @@ def select_topk(heat_map, K=100):
     # Both in [N, C, K]
     topk_scores_all, topk_inds_all = torch.topk(heat_map, K)
 
-    # topk_inds_all = topk_inds_all % (height * width) # todo: this seems redudant
+    # topk_inds_all = topk_inds_all % (height * width) # TODO: this seems redudant
     topk_ys = (topk_inds_all / width).float()
     topk_xs = (topk_inds_all % width).float()
 

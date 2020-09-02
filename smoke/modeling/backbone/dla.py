@@ -270,7 +270,7 @@ class DLA(nn.Module):
             y.append(x[i].clone())
         self.ida_up(y, 0, len(y))
 
-        # todo: this can be further cleaned
+        # TODO: this can be further cleaned
         return y[-1]
 
 
@@ -398,7 +398,7 @@ class IDAUp(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channel,
-                 up_f,  # todo: what is up_f here?
+                 up_f,  # TODO: what is up_f here?
                  norm_func):
         super(IDAUp, self).__init__()
 

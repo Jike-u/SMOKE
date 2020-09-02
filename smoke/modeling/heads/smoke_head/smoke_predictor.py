@@ -62,7 +62,7 @@ class SMOKEPredictor(nn.Module):
                       bias=True)
         )
 
-        # todo: what is datafill here
+        # TODO: what is datafill here
         self.class_head[-1].bias.data.fill_(-2.19)
 
         self.regression_head = nn.Sequential(
