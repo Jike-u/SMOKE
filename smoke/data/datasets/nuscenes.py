@@ -66,7 +66,8 @@ class NuScenesDataset(Dataset):
 
     def __getitem__(self, idx):
         # load default parameter here
-        img, image_id, anns, K = self.load_data(idx)
+        img, image_id, anns, calib = self.load_data(idx)
+        K = calib['K']
 
         center = np.array([i / 2 for i in img.size], dtype=np.float32)
         size = np.array([i for i in img.size], dtype=np.float32)
@@ -118,6 +119,7 @@ class NuScenesDataset(Dataset):
                                 is_train=self.is_train)
             target.add_field("trans_mat", trans_mat)
             target.add_field("K", K)
+            target.add_field("global_T_cam", calib['global_T_cam'])
             if self.transforms is not None:
                 img, target = self.transforms(img, target)
 
@@ -196,7 +198,9 @@ class NuScenesDataset(Dataset):
         img = Image.open(img_path)
         image_id = image_info['sample_token'] + ' ' + image_info['token']
         K = np.array(image_info['cam_intrinsic'], dtype=np.float32)
-        
+        global_T_cam = np.array(image_info['global_T_cam'], dtype=np.float32)
+        calib = {'K': K, 'global_T_cam': global_T_cam}
+
         anns_info = self.anns_infos[idx]
         annotations = []
 
@@ -210,7 +214,7 @@ class NuScenesDataset(Dataset):
                     "rot_y": float(ann_info['rot_y'])
                 })
 
-        return img, image_id, annotations, K
+        return img, image_id, annotations, calib
     
     def filter_samples(self, classes):
         image_infos_filtered = []

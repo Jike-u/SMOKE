@@ -4,6 +4,8 @@ import json
 import logging
 import subprocess
 from tqdm import tqdm
+import numpy as np
+from pyquaternion import Quaternion
 
 from smoke.utils.miscellaneous import mkdir
 
@@ -75,23 +77,44 @@ def do_nusc_detection_evaluation(eval_type,
 def generate_nusc_3d_detection(prediction, sample_token):
     # TODO: finish generate detection
     result = []
-    if len(prediction) > 0:
-        for p in prediction:
-            p = p.numpy()
-            p = p.round(4)
+    detections, global_T_cam = prediction[0], prediction[1]
+    assert len(global_T_cam.size()) == 2 and global_T_cam.size(0) == global_T_cam.size(1) == 4
+    global_T_cam = global_T_cam.numpy()
+    rot_global_T_cam = Quaternion(matrix=global_T_cam)
+    
+    if len(detections) > 0:
+        for d in detections:
+            d = d.numpy().astype(np.float32).tolist()
+            assert len(d) == 14
+            
+            # detection name
+            detection_name = ID_TYPE_CONVERSION[int(d[0])]
 
-            detection_name = ID_TYPE_CONVERSION[int(p[0])]
+            # size, wlh
+            size = (d[7], d[8], d[6])
 
+            # translation: bottom -> center, cam -> global
+            translation = np.array([d[9], d[10] - size[2] / 2.0, d[11], 1.0], dtype=np.float32)
+            translation = np.dot(global_T_cam, translation)
+            translation = tuple(translation.tolist()[:3])
+
+            # rotation: cam -> global
+            rot_y = Quaternion(axis=[0, 1, 0], angle=d[12])
+            rot_global = rot_global_T_cam * rot_y
+            rotation = tuple(rot_global.elements.astype(np.float32).tolist())
+
+            # aggregate results
             single_result  = {
                 'sample_token': sample_token,
-                'translation': (0.0, 0.0, 0.0),        # <float> [3]   -- Estimated bounding box location in m in the global frame: center_x, center_y, center_z.
-                'size': (0.0, 0.0, 0.0),              # <float> [3]   -- Estimated bounding box size in m: width, length, height.
-                'rotation': (0.0, 0.0, 0.0, 0.0),      # <float> [4]   -- Estimated bounding box orientation as quaternion in the global frame: w, x, y, z.
-                'velocity': (0.0, 0.0),          # <float> [2]   -- Estimated bounding box velocity in m/s in the global frame: vx, vy.
-                'detection_name': detection_name,    # <str>         -- The predicted class for this sample_result, e.g. car, pedestrian.
-                'detection_score': 0.0, # <float>       -- Object prediction score between 0 and 1 for the class identified by detection_name.
-                'attribute_name': ''   # <str>         -- Name of the predicted attribute or empty string for classes without attributes.
+                'translation': translation,            # <float> [3]   -- Estimated bounding box location in m in the global frame: center_x, center_y, center_z.
+                'size': size,                          # <float> [3]   -- Estimated bounding box size in m: width, length, height.
+                'rotation': rotation,                  # <float> [4]   -- Estimated bounding box orientation as quaternion in the global frame: w, x, y, z.
+                'velocity': (0.0, 0.0), # TODO         # <float> [2]   -- Estimated bounding box velocity in m/s in the global frame: vx, vy.
+                'detection_name': detection_name,      # <str>         -- The predicted class for this sample_result, e.g. car, pedestrian.
+                'detection_score': d[13],              # <float>       -- Object prediction score between 0 and 1 for the class identified by detection_name.
+                'attribute_name': '' # TODO            # <str>         -- Name of the predicted attribute or empty string for classes without attributes.
             }
 
+            result.append(single_result)
 
     return result

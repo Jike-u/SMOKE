@@ -49,7 +49,7 @@ for sample in tqdm(nusc.sample):
         ego_T_cam = transform_matrix(cam_calib['translation'], Quaternion(cam_calib['rotation']), inverse=False)
         global_T_cam = np.dot(global_T_ego, ego_T_cam)
 
-        _, boxes, camera_intrinsic = nusc.get_sample_data(cam_token, box_vis_level=BoxVisibility.ANY)
+        _, boxes, camera_intrinsic = nusc.get_sample_data(cam_token, box_vis_level=BoxVisibility.ANY) # boxes are in current sensor's frame
         cam_intrinsic = np.zeros((3, 4))
         cam_intrinsic[:, :3] = camera_intrinsic # 3x3 -> 3x4
         
@@ -62,9 +62,9 @@ for sample in tqdm(nusc.sample):
             'width': cam_data['width'],
             'height': cam_data['height'],
             'cam_intrinsic': cam_intrinsic.tolist(), # 3x4
-            'global_T_ego': global_T_ego.tolist(), # 4x4
-            'ego_T_cam': ego_T_cam.tolist(), # 4x4
             'global_T_cam': global_T_cam.tolist(), #4x4
+            #'global_T_ego': global_T_ego.tolist(), # 4x4, not necessary in our case
+            #'ego_T_cam': ego_T_cam.tolist(), # 4x4, not necessary in our case
         }
 
         # distill annotations
@@ -105,7 +105,9 @@ for sample in tqdm(nusc.sample):
                     vis = False
                     break
             if vis:
-                anns_info_filtered.append(anns_info[a])
+                ann_info = anns_info[a].copy()
+                del ann_info['bbox2D'] # bbox2D is not necessary in our case
+                anns_info_filtered.append(ann_info)
 
         # save infos to splits
         for split in splits:

@@ -23,8 +23,10 @@ def compute_on_dataset(model, data_loader, device, timer=None):
                 torch.cuda.synchronize()
                 timer.toc()
             output = output.to(cpu_device)
+        if targets[0].has_field('global_T_cam'):
+            output = (output, torch.stack([t.get_field("global_T_cam") for t in targets]).squeeze().to(cpu_device))
         results_dict.update(
-            {img_id: output for img_id in image_ids} # TODO: here seems image_ids actually only have size 1
+            {img_id: output for img_id in image_ids} # TODO: here seems image_ids actually only have size 1, code is not quite elegant
         )
     return results_dict
 
