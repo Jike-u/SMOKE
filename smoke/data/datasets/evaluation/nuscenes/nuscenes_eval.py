@@ -48,7 +48,7 @@ def do_nusc_detection_evaluation(eval_type,
     predict_folder = os.path.join(output_folder, 'data')  # only recognize data
     mkdir(predict_folder)
 
-    meta: {
+    meta = {
         'use_camera': False,
         'use_lidar': False,
         'use_radar': False,
