@@ -65,7 +65,7 @@ class NuScenesDataset(Dataset):
         return self.num_samples
 
     def __getitem__(self, idx):
-        # load default parameter here
+
         img, image_id, anns, calib = self.load_data(idx)
         K = calib['K']
 
@@ -119,7 +119,8 @@ class NuScenesDataset(Dataset):
                                 is_train=self.is_train)
             target.add_field("trans_mat", trans_mat)
             target.add_field("K", K)
-            target.add_field("global_T_cam", calib['global_T_cam'])
+            target.add_field("ego_T_cam", calib['ego_T_cam'])
+            target.add_field("global_T_ego", calib['global_T_ego'])
             if self.transforms is not None:
                 img, target = self.transforms(img, target)
 
@@ -198,8 +199,9 @@ class NuScenesDataset(Dataset):
         img = Image.open(img_path)
         image_id = image_info['sample_token'] + ' ' + image_info['token']
         K = np.array(image_info['cam_intrinsic'], dtype=np.float32)
-        global_T_cam = np.array(image_info['global_T_cam'], dtype=np.float32)
-        calib = {'K': K, 'global_T_cam': global_T_cam}
+        ego_T_cam = np.array(image_info['ego_T_cam'], dtype=np.float32)
+        global_T_ego = np.array(image_info['global_T_ego'], dtype=np.float32)
+        calib = {'K': K, 'global_T_ego': global_T_ego, 'ego_T_cam': ego_T_cam}
 
         anns_info = self.anns_infos[idx]
         annotations = []
@@ -231,11 +233,3 @@ class NuScenesDataset(Dataset):
         self.image_infos = image_infos_filtered
         self.anns_infos = anns_infos_filtered
         return
-
-# debug
-if __name__ == "__main__":
-    from smoke.config import cfg_nusc as cfg
-    root = '../../../datasets/nuscenes/'
-    json_file = 'smoke_convert/train_half.json'
-    train_full = NuScenesDataset(cfg, root, json_file)
-    print(len(train_full))

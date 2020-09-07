@@ -47,7 +47,7 @@ for sample in tqdm(nusc.sample):
         # compute transformations (4x4 matrices)
         global_T_ego = transform_matrix(ego_pose['translation'], Quaternion(ego_pose['rotation']), inverse=False)
         ego_T_cam = transform_matrix(cam_calib['translation'], Quaternion(cam_calib['rotation']), inverse=False)
-        global_T_cam = np.dot(global_T_ego, ego_T_cam)
+        #global_T_cam = np.dot(global_T_ego, ego_T_cam)
 
         _, boxes, camera_intrinsic = nusc.get_sample_data(cam_token, box_vis_level=BoxVisibility.ANY) # boxes are in current sensor's frame
         cam_intrinsic = np.zeros((3, 4))
@@ -62,9 +62,9 @@ for sample in tqdm(nusc.sample):
             'width': cam_data['width'],
             'height': cam_data['height'],
             'cam_intrinsic': cam_intrinsic.tolist(), # 3x4
-            'global_T_cam': global_T_cam.tolist(), #4x4
-            #'global_T_ego': global_T_ego.tolist(), # 4x4, not necessary in our case
-            #'ego_T_cam': ego_T_cam.tolist(), # 4x4, not necessary in our case
+            #'global_T_cam': global_T_cam.tolist(), #4x4
+            'global_T_ego': global_T_ego.tolist(), # 4x4
+            'ego_T_cam': ego_T_cam.tolist(), # 4x4
         }
 
         # distill annotations

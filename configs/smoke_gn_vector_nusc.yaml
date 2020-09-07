@@ -7,7 +7,7 @@ DATASETS:
   DETECT_CLASSES: ("bicycle", "bus", "car", "construction_vehicle", "motorcycle", "pedestrian", "trailer", "truck")
   MAX_OBJECTS: 128
   TRAIN: ("nusc_train_half",)
-  TEST: ("nusc_test",)
+  TEST: ("nusc_val_mini",)
 SOLVER:
   BASE_LR: 5.0e-4
   STEPS: (200000, 250000)
@@ -15,4 +15,4 @@ SOLVER:
   IMS_PER_BATCH: 32
   CHECKPOINT_PERIOD: 500
 TEST:
-  TEST_TYPES: ("detection_camera",)
+  TEST_TYPE: "detection_camera"
