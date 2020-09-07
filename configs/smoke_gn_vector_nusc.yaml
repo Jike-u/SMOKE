@@ -6,8 +6,8 @@ INPUT:
 DATASETS:
   DETECT_CLASSES: ("bicycle", "bus", "car", "construction_vehicle", "motorcycle", "pedestrian", "trailer", "truck")
   MAX_OBJECTS: 128
-  TRAIN: ("nusc_train_half",)
-  TEST: ("nusc_val_mini",)
+  TRAIN: ("nusc_train_full",)
+  TEST: ("nusc_val_full",)
 SOLVER:
   BASE_LR: 5.0e-4
   STEPS: (200000, 250000)
