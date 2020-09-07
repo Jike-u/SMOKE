@@ -12,7 +12,7 @@ def compute_on_dataset(model, data_loader, device, timer=None):
     model.eval()
     results_dict = {}
     cpu_device = torch.device("cpu")
-    for _, batch in enumerate(tqdm(data_loader)):
+    for batch in tqdm(data_loader):
         images, targets, image_ids = batch["images"], batch["targets"], batch["img_ids"]
         images = images.to(device)
         with torch.no_grad():
@@ -23,8 +23,10 @@ def compute_on_dataset(model, data_loader, device, timer=None):
                 torch.cuda.synchronize()
                 timer.toc()
             output = output.to(cpu_device)
+        if targets[0].has_field("global_T_ego"):
+            output = (output, torch.stack([t.get_field("ego_T_cam") for t in targets]).squeeze().to(cpu_device), torch.stack([t.get_field("global_T_ego") for t in targets]).squeeze().to(cpu_device))
         results_dict.update(
-            {img_id: output for img_id in image_ids}
+            {img_id: output for img_id in image_ids} # TODO: here seems image_ids actually only have size 1, code is not quite elegant
         )
     return results_dict
 
@@ -33,7 +35,7 @@ def inference(
         model,
         data_loader,
         dataset_name,
-        eval_types=("detections",),
+        eval_type="detection",
         device="cuda",
         output_folder=None,
 
@@ -68,7 +70,7 @@ def inference(
     if not comm.is_main_process():
         return
 
-    return evaluate(eval_type=eval_types,
+    return evaluate(eval_type=eval_type,
                     dataset=dataset,
                     predictions=predictions,
                     output_folder=output_folder, )

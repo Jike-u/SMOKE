@@ -7,7 +7,7 @@ from smoke.utils.miscellaneous import mkdir
 
 
 def run_test(cfg, model):
-    eval_types = ("detection",)
+    eval_type = cfg.TEST.TEST_TYPE
     output_folders = [None] * len(cfg.DATASETS.TEST)
     dataset_names = cfg.DATASETS.TEST
     if cfg.OUTPUT_DIR:
@@ -19,9 +19,9 @@ def run_test(cfg, model):
     for output_folder, dataset_name, data_loader_val in zip(output_folders, dataset_names, data_loaders_val):
         inference(
             model,
-            data_loaders_val,
+            data_loader_val,
             dataset_name=dataset_name,
-            eval_types=eval_types,
+            eval_type=eval_type,
             device=cfg.MODEL.DEVICE,
             output_folder=output_folder,
         )

@@ -3,7 +3,7 @@ import math
 import torch
 from torch import nn
 
-from smoke.config import cfg
+#from smoke.config import cfg
 
 
 def _make_conv_level(in_channels, out_channels, num_convs, norm_func,
@@ -25,7 +25,7 @@ def _make_conv_level(in_channels, out_channels, num_convs, norm_func,
 
 
 def group_norm(out_channels):
-    num_groups = cfg.MODEL.GROUP_NORM.NUM_GROUPS
+    num_groups = 32 #cfg.MODEL.GROUP_NORM.NUM_GROUPS
     if out_channels % 32 == 0:
         return nn.GroupNorm(num_groups, out_channels)
     else:
@@ -33,7 +33,7 @@ def group_norm(out_channels):
 
 
 def _fill_up_weights(up):
-    # todo: we can replace math here?
+    # TODO: we can replace math here?
     w = up.weight.data
     f = math.ceil(w.size(2) / 2)
     c = (2 * f - 1 - f % 2) / (2. * f)

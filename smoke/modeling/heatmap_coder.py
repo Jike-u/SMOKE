@@ -4,7 +4,7 @@ from skimage import transform as trans
 
 def get_transfrom_matrix(center_scale, output_size):
     center, scale = center_scale[0], center_scale[1]
-    # todo: further add rot and shift here.
+    # TODO: further add rot and shift here.
     src_w = scale[0]
     dst_w = output_size[0]
     dst_h = output_size[1]
