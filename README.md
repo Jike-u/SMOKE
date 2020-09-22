@@ -3,10 +3,10 @@
 ## New features of this repo
 
 - [ ] python code for KITTI evaluation
-
+- [ ] multi-GPU inference
 - [x] support training and evaluating on nuScenes dataset.
+- [ ] tuned hyperparameters for nuScenes
 - [ ] estimating objects' velocities and attributes
-- [ ] prepare nuScenes testing set
 - [ ] radar data
 
 ## Requirements
