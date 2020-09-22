@@ -29,6 +29,10 @@ class DatasetCatalog():
         "nusc_val_full": {
             "root": "nuscenes/",
             "extra": {"json_file": "smoke_convert/val_full.json"}
+        },
+        "nusc_test": {
+            "root": "nuscenes/",
+            "extra": {"json_file": "smoke_convert/test.json"}
         }
     }
 
