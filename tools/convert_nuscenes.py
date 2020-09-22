@@ -7,7 +7,7 @@ import numpy as np
 from pyquaternion import Quaternion
 
 from nuscenes.nuscenes import NuScenes
-from nuscenes.utils.splits import mini_train as TRAIN_SCENES_MINI, train_detect as TRAIN_SCENES_HALF, train as TRAIN_SCENES_FULL, mini_val as VAL_SCENES_MINI, val as VAL_SCENES_FULL
+from nuscenes.utils.splits import mini_train as TRAIN_SCENES_MINI, train_detect as TRAIN_SCENES_HALF, train as TRAIN_SCENES_FULL, mini_val as VAL_SCENES_MINI, val as VAL_SCENES_FULL, test as TEST_SCENES
 from nuscenes.utils.geometry_utils import BoxVisibility, transform_matrix
 from nuscenes.utils.kitti import KittiDB
 from nuscenes.eval.detection.utils import category_to_detection_name
@@ -15,9 +15,8 @@ from nuscenes.eval.detection.utils import category_to_detection_name
 def _bbox2D_inside(box1, box2): # box1 in box2
     return box1[0] >= box2[0] and box1[2] <= box2[2] and box1[1] >= box2[1] and box1[3] <= box2[3] 
 
-DATA_PATH = '../datasets/nuscenes'
+DATA_PATH = os.path.split(os.path.realpath(__file__))[0] + '/../datasets/nuscenes'
 USED_CAMS = ['CAM_FRONT', 'CAM_FRONT_RIGHT', 'CAM_BACK_RIGHT', 'CAM_BACK', 'CAM_BACK_LEFT', 'CAM_FRONT_LEFT']
-nusc = NuScenes(version='v1.0-trainval', dataroot=DATA_PATH, verbose=True)
 
 SPLITS = {
     'train_mini': {'scenes': TRAIN_SCENES_MINI, 'images': [], 'annotations': []},
@@ -27,6 +26,7 @@ SPLITS = {
     'val_full': {'scenes': VAL_SCENES_FULL, 'images': [], 'annotations': []}
 }
 
+nusc = NuScenes(version='v1.0-trainval', dataroot=DATA_PATH, verbose=True)
 for sample in tqdm(nusc.sample):
     scene_name = nusc.get('scene', sample['scene_token'])['name']
     splits = []
@@ -113,6 +113,48 @@ for sample in tqdm(nusc.sample):
         for split in splits:
             SPLITS[split]['images'].append(copy.deepcopy(image_info))
             SPLITS[split]['annotations'].append(copy.deepcopy(anns_info_filtered))
+
+SPLITS['test'] = {'scenes': TEST_SCENES, 'images': [], 'annotations': []}
+nusc = NuScenes(version='v1.0-test', dataroot=DATA_PATH, verbose=True)
+for sample in tqdm(nusc.sample):
+    scene_name = nusc.get('scene', sample['scene_token'])['name']
+    if scene_name not in SPLITS['test']['scenes']:
+        continue
+
+    for cam in USED_CAMS:
+
+        # get data
+        cam_token = sample['data'][cam]
+        cam_data = nusc.get('sample_data', cam_token)
+        cam_calib = nusc.get('calibrated_sensor', cam_data['calibrated_sensor_token'])
+        ego_pose = nusc.get('ego_pose', cam_data['ego_pose_token'])
+
+        # compute transformations (4x4 matrices)
+        global_T_ego = transform_matrix(ego_pose['translation'], Quaternion(ego_pose['rotation']), inverse=False)
+        ego_T_cam = transform_matrix(cam_calib['translation'], Quaternion(cam_calib['rotation']), inverse=False)
+        #global_T_cam = np.dot(global_T_ego, ego_T_cam)
+
+        _, _, camera_intrinsic = nusc.get_sample_data(cam_token)
+        cam_intrinsic = np.zeros((3, 4))
+        cam_intrinsic[:, :3] = camera_intrinsic # 3x3 -> 3x4
+        
+        # distill image info
+        image_info = {
+            'token': cam_data['token'],
+            'sample_token': cam_data['sample_token'],
+            'sensor_name': cam_data['channel'],
+            'filename': cam_data['filename'],
+            'width': cam_data['width'],
+            'height': cam_data['height'],
+            'cam_intrinsic': cam_intrinsic.tolist(), # 3x4
+            #'global_T_cam': global_T_cam.tolist(), #4x4
+            'global_T_ego': global_T_ego.tolist(), # 4x4
+            'ego_T_cam': ego_T_cam.tolist(), # 4x4
+        }
+
+        # save infos to splits
+        SPLITS['test']['images'].append(copy.deepcopy(image_info))
+        SPLITS['test']['annotations'].append([])
 
 # dump infos
 OUT_PATH = os.path.join(DATA_PATH, 'smoke_convert')

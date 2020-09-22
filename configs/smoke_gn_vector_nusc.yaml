@@ -9,7 +9,7 @@ DATASETS:
   TRAIN: ("nusc_train_full",)
   TEST: ("nusc_val_full",)
 SOLVER:
-  BASE_LR: 5.0e-4
+  BASE_LR: 1.25e-4
   STEPS: (400000, 500000)
   MAX_ITERATION: 600000
   IMS_PER_BATCH: 32
